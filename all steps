@@ -1,0 +1,281 @@
+Docker:
+1.	Launch an EC2 Instance:
+o	Go to the AWS Management Console.
+o	Navigate to the EC2 Dashboard and click on “Launch Instance”.
+o	Choose an Amazon Machine Image (AMI), preferably Amazon Linux 2.
+o	Select an instance type (e.g., t2.micro for free tier).
+o	Configure instance details, add storage, and configure security groups to allow SSH (port 22) and HTTP (port 80) access.
+o	Review and launch the instance, and download the key pair for SSH access.
+2.	Connect to Your EC2 Instance:
+o	Use an SSH client to connect to your instance. For example:
+o	ssh -i /path/to/your-key-pair.pem ec2-user@your-ec2-public-dns
+3.	Update the Installed Packages:
+o	Once connected, update the package index:
+o	sudo yum update -y
+4.	Install Docker:
+o	Install Docker using the following command:
+o	sudo yum install -y docker
+5.	Start the Docker Service:
+o	Start Docker and enable it to start on boot:
+o	sudo service docker start
+o	sudo systemctl enable docker
+6.	Add the ec2-user to the Docker Group:
+o	This allows you to run Docker commands without sudo:
+o	sudo usermod -aG docker ec2-user
+7.	Verify Docker Installation:
+o	Log out and log back in to apply the group changes, then verify Docker is running:
+o	docker --version
+8.	Run a Test Docker Container:
+o	Pull and run a test Docker container, such as Nginx:
+o	docker run -d -p 80:80 nginx
+9.	Access the Nginx Web Server:
+o	Open a web browser and navigate to your EC2 instance’s public IP address to see the Nginx welcome page.
+
+EKS:
+1. Launch an EC2 Instance
+•	Go to the AWS Management Console and navigate to the EC2 Dashboard.
+•	Click on “Launch Instance” and select an Amazon Machine Image (AMI), preferably Amazon Linux 2.
+•	Choose an instance type (e.g., t2.micro for free tier).
+•	Configure instance details, add storage, and configure security groups to allow SSH (port 22).
+•	Review and launch the instance, and download the key pair for SSH access.
+2. Connect to Your EC2 Instance
+•	Use an SSH client to connect to your instance:
+•	ssh -i /path/to/your-key-pair.pem ec2-user@your-ec2-public-dns
+3. Install AWS CLI
+•	Update the package index and install AWS CLI:
+•	sudo yum update -y
+•	sudo yum install -y aws-cli
+4. Install kubectl
+•	Download and install kubectl:
+•	curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.24.7/2022-10-31/bin/linux/amd64/kubectl
+•	chmod +x ./kubectl
+•	sudo mv ./kubectl /usr/local/bin
+5. Install eksctl
+•	Download and install eksctl:
+•	curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+•	sudo mv /tmp/eksctl /usr/local/bin
+6. Create an EKS Cluster
+•	Use eksctl to create a cluster:
+•	eksctl create cluster --name my-cluster --region us-west-2 --nodegroup-name linux-nodes --node-type t2.micro --nodes 2 --nodes-min 1 --nodes-max 3 --managed
+7. Configure kubectl
+•	Update your kubeconfig file to use the new cluster:
+•	aws eks --region us-west-2 update-kubeconfig --name my-cluster
+8. Verify the Cluster
+•	Check the nodes in your cluster:
+•	kubectl get nodes
+9. Deploy a Sample Application
+•	Deploy a simple Nginx application to verify the setup:
+•	kubectl apply -f https://k8s.io/examples/application/deployment.yaml
+•	kubectl get pods
+10. Access the Application
+•	Expose the Nginx deployment to access it via a browser:
+•	kubectl expose deployment nginx-deployment --type=LoadBalancer --name=nginx-service
+•	kubectl get services
+
+
+KOPS:
+1. Launch an EC2 Instance
+•	Go to the AWS Management Console and navigate to the EC2 Dashboard.
+•	Click on “Launch Instance” and select an Amazon Machine Image (AMI), preferably Ubuntu.
+•	Choose an instance type (e.g., t2.micro for free tier).
+•	Configure instance details, add storage, and configure security groups to allow SSH (port 22).
+•	Review and launch the instance, and download the key pair for SSH access.
+2. Connect to Your EC2 Instance
+•	Use an SSH client to connect to your instance:
+•	ssh -i /path/to/your-key-pair.pem ubuntu@your-ec2-public-dns
+3. Install AWS CLI
+•	Update the package index and install AWS CLI:
+•	sudo apt-get update -y
+•	sudo apt-get install -y awscli
+4. Install kubectl
+•	Download and install kubectl:
+•	curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+•	chmod +x kubectl
+•	sudo mv kubectl /usr/local/bin/
+5. Install kOps
+•	Download and install kOps:
+•	curl -LO https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
+•	chmod +x kops-linux-amd64
+•	sudo mv kops-linux-amd64 /usr/local/bin/kops
+6. Create an S3 Bucket for kOps State Store
+•	Create an S3 bucket to store the state of your Kubernetes cluster:
+•	aws s3api create-bucket --bucket my-kops-state-store --region us-west-2
+7. Create a Route53 Hosted Zone
+•	Create a Route53 hosted zone for your cluster:
+•	aws route53 create-hosted-zone --name example.com --caller-reference 1
+8. Create a Kubernetes Cluster Configuration
+•	Create a cluster configuration using kOps:
+•	kops create cluster --name=mycluster.example.com --state=s3://my-kops-state-store --zones=us-west-2a --node-count=2 --node-size=t2.micro --master-size=t2.micro --dns-zone=example.com
+9. Create SSH Keys
+•	Generate SSH keys for the cluster:
+•	ssh-keygen -f ~/.ssh/id_rsa
+10. Apply the Cluster Configuration
+•	Apply the configuration to create the cluster:
+•	kops update cluster --name mycluster.example.com --state s3://my-kops-state-store --yes
+11. Validate the Cluster
+•	Validate the cluster to ensure everything is set up correctly:
+•	kops validate cluster --state s3://my-kops-state-store
+12. Deploy a Sample Application
+•	Deploy a simple Nginx application to verify the setup:
+•	kubectl apply -f https://k8s.io/examples/application/deployment.yaml
+•	kubectl get pods
+
+
+
+
+ECR:
+1. Create an ECR Repository
+1.	Open the Amazon ECR Console: 
+o	Go to the Amazon ECR Console.
+2.	Create a Repository: 
+o	Click on “Create repository”.
+o	Enter a name for your repository.
+o	Choose the settings you prefer (e.g., scan on push).
+o	Click “Create repository”.
+2. Install AWS CLI
+1.	Update the package index and install AWS CLI:
+2.	sudo apt-get update -y
+3.	sudo apt-get install -y awscli
+3. Authenticate Docker to Your ECR Registry
+1.	Retrieve an authentication token and authenticate your Docker client to your registry:
+2.	aws ecr get-login-password --region your-region | docker login --username AWS --password-stdin your-account-id.dkr.ecr.your-region.amazonaws.com
+4. Build Your Docker Image
+1.	Navigate to your project directory and build your Docker image:
+2.	docker build -t your-image-name .
+5. Tag Your Docker Image
+1.	Tag the image to match your ECR repository URI:
+2.	docker tag your-image-name:latest your-account-id.dkr.ecr.your-region.amazonaws.com/your-repository-name:latest
+6. Push Your Docker Image to ECR
+1.	Push the Docker image to your ECR repository:
+2.	docker push your-account-id.dkr.ecr.your-region.amazonaws.com/your-repository-name:latest
+7. Verify the Image in ECR
+1.	Go back to the Amazon ECR Console and check that your image has been successfully pushed to the repository.
+
+Tomcat:
+1. Set Up Jenkins Server
+1.	Launch an EC2 Instance:
+o	Go to the AWS Management Console and navigate to the EC2 Dashboard.
+o	Launch an instance with Amazon Linux 2 AMI.
+o	Configure security groups to allow SSH (port 22) and HTTP (port 8080).
+2.	Install Jenkins:
+o	Connect to your EC2 instance via SSH:
+o	ssh -i /path/to/your-key-pair.pem ec2-user@your-ec2-public-dns
+o	Install Jenkins:
+o	sudo yum update -y
+o	sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+o	sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+o	sudo yum install jenkins java-1.8.0-openjdk-devel -y
+o	sudo systemctl start jenkins
+o	sudo systemctl enable jenkins
+3.	Access Jenkins:
+o	Open a web browser and navigate to http://your-ec2-public-dns:8080.
+o	Follow the instructions to unlock Jenkins and install the recommended plugins.
+2. Set Up Git and Maven
+1.	Install Git:
+o	On your Jenkins server:
+o	sudo yum install git -y
+2.	Install Maven:
+o	Download and install Maven:
+o	sudo wget https://www-us.apache.org/dist/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz
+o	sudo tar -xvzf apache-maven-3.8.6-bin.tar.gz -C /opt/
+o	sudo ln -s /opt/apache-maven-3.8.6 /opt/maven
+o	sudo ln -s /opt/maven/bin/mvn /usr/bin/mvn
+3. Set Up Tomcat Server
+1.	Launch Another EC2 Instance:
+o	Launch another instance with the same AMI and security group settings.
+2.	Install Tomcat:
+o	Connect to your EC2 instance via SSH:
+o	ssh -i /path/to/your-key-pair.pem ec2-user@your-ec2-public-dns
+o	Download and install Tomcat:
+o	sudo wget https://downloads.apache.org/tomcat/tomcat-9/v9.0.65/bin/apache-tomcat-9.0.65.tar.gz
+o	sudo tar -xvzf apache-tomcat-9.0.65.tar.gz -C /opt/
+o	sudo ln -s /opt/apache-tomcat-9.0.65 /opt/tomcat
+o	sudo chmod +x /opt/tomcat/bin/*.sh
+o	sudo /opt/tomcat/bin/startup.sh
+4. Integrate Jenkins with Git and Maven
+1.	Configure Jenkins Job:
+o	Go to Jenkins Dashboard and create a new job (Freestyle project).
+o	In the Source Code Management section, select Git and enter your repository URL.
+o	In the Build section, add a build step to invoke Maven goals:
+o	clean install
+2.	Install Deploy to Container Plugin:
+o	Go to Jenkins Dashboard > Manage Jenkins > Manage Plugins.
+o	Install the “Deploy to Container” plugin.
+3.	Configure Post-build Actions:
+o	In your Jenkins job configuration, add a post-build action to deploy the WAR file to Tomcat.
+o	Enter the Tomcat server details (URL, credentials).
+5. Run the Jenkins Job
+1.	Build the Job: 
+o	Trigger a build manually or set up a webhook to trigger builds on code commits.
+o	Jenkins will pull the code from Git, build it using Maven, and deploy the WAR file to the Tomcat server.
+1. Creating a VPC (Virtual Private Cloud)
+1.	Open the VPC Dashboard: Go to the AWS Management Console and open the VPC dashboard.
+2.	Create a VPC: Click on “Create VPC”. Provide a name, IPv4 CIDR block (e.g., 10.0.0.0/16), and other optional settings.
+3.	Subnets: Create subnets within your VPC. You can create public and private subnets by specifying different CIDR blocks (e.g., 10.0.1.0/24 for public, 10.0.2.0/24 for private).
+4.	Internet Gateway: Attach an Internet Gateway to your VPC to allow internet access for public subnets.
+5.	Route Tables: Create and associate route tables with your subnets. Add routes to direct traffic (e.g., 0.0.0.0/0 to the Internet Gateway for public subnets).
+2. Setting Up EFS (Elastic File System)
+1.	Open the EFS Dashboard: Go to the AWS Management Console and open the EFS dashboard.
+2.	Create File System: Click on “Create file system”. Choose your VPC and subnets.
+3.	Configure Access Points: Optionally, create access points for specific applications or users.
+4.	Mount Targets: Create mount targets in each subnet where you want to access the file system.
+5.	Mount EFS: Use the provided mount instructions to mount the EFS on your EC2 instances.
+3. Creating Snapshots
+1.	Open the EC2 Dashboard: Go to the AWS Management Console and open the EC2 dashboard.
+2.	Select Volumes: Under “Elastic Block Store”, select “Volumes”.
+3.	Create Snapshot: Select the volume you want to back up and click “Create Snapshot”. Provide a description and create the snapshot.
+4.	Manage Snapshots: You can view and manage your snapshots under “Snapshots” in the EC2 dashboard.
+4. Creating AMIs (Amazon Machine Images)
+1.	Open the EC2 Dashboard: Go to the AWS Management Console and open the EC2 dashboard.
+2.	Select Instance: Select the instance you want to create an AMI from.
+3.	Create Image: Click on “Actions” > “Image” > “Create Image”. Provide a name and description.
+4.	Configure AMI: Choose the volumes to include and other settings. Click “Create Image”.
+5.	Manage AMIs: You can view and manage your AMIs under “AMIs” in the EC2 dashboard.
+5. Creating and Managing S3 Buckets
+1.	Open the S3 Dashboard: Go to the AWS Management Console and open the S3 dashboard.
+2.	Create Bucket: Click on “Create bucket”. Provide a name and choose the region.
+3.	Configure Settings: Configure settings like versioning, encryption, and access permissions.
+4.	Upload Objects: Click on the bucket name and upload objects.
+5.	Manage Bucket Policies: Set bucket policies to control access. You can also use VPC endpoints to restrict access to your VPC1.
+
+
+Project 1: Migrating Data Using Snapshots
+Step-by-Step Process:
+1.	Create a Snapshot:
+o	Open the EC2 Dashboard: Go to the AWS Management Console and open the EC2 dashboard.
+o	Select Volumes: Under “Elastic Block Store”, select “Volumes”.
+o	Create Snapshot: Select the volume you want to back up and click “Create Snapshot”. Provide a description and create the snapshot.
+2.	Copy Snapshot to Another Region (if needed):
+o	Select Snapshot: Go to “Snapshots” in the EC2 dashboard.
+o	Copy Snapshot: Select the snapshot, click “Actions” > “Copy”. Choose the destination region and initiate the copy.
+3.	Create a New Volume from Snapshot:
+o	Open the EC2 Dashboard: Go to “Snapshots”.
+o	Create Volume: Select the snapshot, click “Actions” > “Create Volume”. Choose the availability zone and other settings.
+4.	Attach Volume to an Instance:
+o	Select Instance: Go to “Instances” in the EC2 dashboard.
+o	Attach Volume: Select the instance, click “Actions” > “Attach Volume”. Choose the volume and attach it.
+5.	Mount the Volume:
+o	SSH into Instance: Connect to your instance via SSH.
+o	Mount Volume: Use commands like sudo mount /dev/xvdf /mnt to mount the volume.
+Project 2: Migrating Server Using AMIs
+Step-by-Step Process:
+1.	Create an AMI:
+o	Open the EC2 Dashboard: Go to the AWS Management Console and open the EC2 dashboard.
+o	Select Instance: Select the instance you want to create an AMI from.
+o	Create Image: Click “Actions” > “Image” > “Create Image”. Provide a name and description.
+2.	Copy AMI to Another Region (if needed):
+o	Select AMI: Go to “AMIs” in the EC2 dashboard.
+o	Copy AMI: Select the AMI, click “Actions” > “Copy AMI”. Choose the destination region and initiate the copy.
+3.	Launch Instance from AMI:
+o	Open the EC2 Dashboard: Go to “AMIs”.
+o	Launch Instance: Select the AMI, click “Launch”. Configure instance details, add storage, configure security groups, and launch the instance.
+4.	Configure Instance:
+o	SSH into Instance: Connect to your new instance via SSH.
+o	Install/Configure Software: Install and configure any necessary software or services.
+5.	Update DNS (if needed):
+o	Update DNS Records: Update your DNS records to point to the new instance’s IP address.
+
+
+
+
+
